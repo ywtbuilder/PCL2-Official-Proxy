@@ -53,7 +53,7 @@ Public Class PageInstanceSetup
             UpdateJavaList()
 
             '服务器
-            ComboServerLogin.SelectedIndex = Settings.Get(Of Integer)("VersionServerLogin", Instance:=PageInstanceLeft.Instance)
+            ComboServerLogin.SelectedIndex = 0
             ComboServerLoginLast = ComboServerLogin.SelectedIndex
             UpdateServerLoginUI()
 

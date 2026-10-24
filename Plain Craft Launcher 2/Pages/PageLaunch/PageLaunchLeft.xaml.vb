@@ -289,81 +289,14 @@ Public Class PageLaunchLeft
     ''' 确认当前显示的子页面正确，并刷新该页面。
     ''' </summary>
     Public Sub RefreshPage(KeepInput As Boolean, Anim As Boolean)
-        '获取页面的可用种类并回写缓存
-        Dim Type As PageType
-        Dim LoginPageType As Integer
-        If McInstanceSelected IsNot Nothing Then
-            LoginPageType = Settings.Get(Of Integer)("VersionServerLogin", Instance:=McInstanceSelected)
-            '缓存当前版本的页面种类，下一次打开 McInstanceSelected 为空时才能加载出正确的页面
-            Settings.Set("LoginPageType", LoginPageType)
-        Else
-            LoginPageType = Settings.Get(Of Integer)("LoginPageType")
-        End If
-        Select Case LoginPageType
-            Case 0 '正版或离线
-UnknownType:
-                If RadioLoginType5.Checked Then
-                    If Settings.Get(Of String)("CacheMsV2Access") = "" Then
-                        Type = PageType.Ms
-                    Else
-                        Type = PageType.MsSkin
-                    End If
-                    Settings.Set("LoginType", McLoginType.Ms)
-                Else
-                    Type = PageType.Legacy
-                    Settings.Set("LoginType", McLoginType.Legacy)
-                End If
-                PanType.Visibility = Visibility.Visible
-                PanTypeOne.Visibility = Visibility.Collapsed
-                RadioLoginType5.Visibility = Visibility.Visible
-                RadioLoginType0.Visibility = Visibility.Visible
-            Case 1 '仅正版
-                If Settings.Get(Of String)("CacheMsV2Access") = "" Then
-                    Type = PageType.Ms
-                Else
-                    Type = PageType.MsSkin
-                End If
-                Settings.Set("LoginType", McLoginType.Ms)
-                PanType.Visibility = Visibility.Collapsed
-                PanTypeOne.Visibility = Visibility.Visible
-                PathTypeOne.Data = (New GeometryConverter).ConvertFromString(Logo.IconButtonShield)
-                LabTypeOne.Text = "正版登录"
-                RadioLoginType5.Visibility = Visibility.Visible
-                RadioLoginType0.Visibility = Visibility.Collapsed
-            Case 2 '仅离线
-                Type = PageType.Legacy
-                Settings.Set("LoginType", McLoginType.Legacy)
-                PanType.Visibility = Visibility.Collapsed
-                PanTypeOne.Visibility = Visibility.Visible
-                PathTypeOne.Data = (New GeometryConverter).ConvertFromString(Logo.IconButtonOffline)
-                LabTypeOne.Text = "离线登录"
-            Case 3 '统一通行证
-                If Settings.Get(Of String)("CacheNideAccess") = "" Then
-                    Type = PageType.Nide
-                Else
-                    Type = PageType.NideSkin
-                End If
-                Settings.Set("LoginType", McLoginType.Nide)
-                PanType.Visibility = Visibility.Collapsed
-                PanTypeOne.Visibility = Visibility.Visible
-                PathTypeOne.Data = (New GeometryConverter).ConvertFromString(Logo.IconButtonCard)
-                LabTypeOne.Text = "统一通行证登录"
-            Case 4 'Authlib-Injector
-                If Settings.Get(Of String)("CacheAuthAccess") = "" Then
-                    Type = PageType.Auth
-                Else
-                    Type = PageType.AuthSkin
-                End If
-                Settings.Set("LoginType", McLoginType.Auth)
-                PanType.Visibility = Visibility.Collapsed
-                PanTypeOne.Visibility = Visibility.Visible
-                PathTypeOne.Data = (New GeometryConverter).ConvertFromString(Logo.IconButtonCard)
-                LabTypeOne.Text = If(McInstanceSelected Is Nothing, Settings.Get(Of String)("CacheAuthServerName"), Settings.Get(Of String)("VersionServerAuthName", Instance:=McInstanceSelected))
-                If LabTypeOne.Text = "" Then LabTypeOne.Text = "第三方登录"
-            Case Else
-                Logger.Error($"未知的登录页面：{LoginPageType}", LogBehavior.Toast)
-                GoTo UnknownType
-        End Select
+        Dim Type = If(Settings.Get(Of String)("CacheMsV2Access") = "", PageType.Ms, PageType.MsSkin)
+        Settings.Set("LoginType", McLoginType.Ms)
+        PanType.Visibility = Visibility.Collapsed
+        PanTypeOne.Visibility = Visibility.Visible
+        PathTypeOne.Data = (New GeometryConverter).ConvertFromString(Logo.IconButtonShield)
+        LabTypeOne.Text = "正版登录"
+        RadioLoginType5.Visibility = Visibility.Visible
+        RadioLoginType0.Visibility = Visibility.Collapsed
         '刷新页面
         If PageCurrent = Type Then Return
         PageChange(Type, Anim).Reload(KeepInput)

@@ -9,6 +9,7 @@ on:
       - 'PCLCS/**'
       - 'MeloongCore'
       - '.github/workflows/build.yml'
+      - '.github/scripts/**'
 
 permissions:
   contents: read
@@ -49,6 +50,10 @@ jobs:
 
       - name: Build Release
         run: msbuild "Plain Craft Launcher 2/Plain Craft Launcher 2.vbproj" /m /p:Configuration=Release /verbosity:minimal
+
+      - name: Verify Java ownership decisions
+        shell: powershell
+        run: ./.github/scripts/test-minecraft-ownership.ps1
 
       - name: Package application and proxy configuration
         shell: pwsh

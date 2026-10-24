@@ -1,0 +1,62 @@
+Plain Craft Launcher (PCL) 官方源代理修改版
+
+这是第三方在本机修改的源码分支，原作者为龙腾猫跃，不是 PCL 官方发行版。
+
+基线与选择
+本地主分支：main（由 custom/official-source-proxy 重命名）。
+上游快照分支：upstream-main，保留 origin/main 对应的 2.99.0.0。
+基线：2.14.0.0 正式版，提交 5ef81e490ae46b1100d61e33d0183094c7a80ca8。
+与 2.99.0.0 比对后，下载引擎、Java 下载和启动核心代码没有变化。
+2.99.0.0 增加了原版下载和整合包安装限制；本分支从原本保留这些能力的版本开始。
+MeloongCore 保持基线原配提交 c774ae4c85fd94e0eaa171db21e78a65870df19b。
+
+下载源
+“文件下载源”和“版本列表源”默认选择原有的“尽量使用官方源”（设置值 2）。
+保留原有国内镜像、来源选项及回退逻辑，没有增加“仅官方”模式。
+Minecraft 本体、版本信息、资源、支持库及 Java 优先使用官方地址，官方源失败时仍可按原逻辑尝试镜像。
+Forge、NeoForge、Fabric、OptiFine 等组件使用各自项目的官方服务器，不是微软服务器。
+原有的三个来源选项继续保留，可以手动切回镜像优先。
+已有注册表配置会沿用原值；需要时在设置中将这两项选为“尽量使用官方源”。
+社区 Mod 下载来源有独立设置，本次没有更改。
+
+本机代理
+Plain Craft Launcher 2\App.config 指定 HTTP 代理 http://127.0.0.1:7897。
+该配置供本地编译后的这个程序使用，不修改 Windows 系统代理或 Clash 的订阅、模式及所选节点。
+使用时保持 Clash 的本地代理服务运行；端口变化时修改 App.config 的 proxyaddress 后重新编译。
+已编译程序的同名 .exe.config 也可修改相同配置；修改后需要重启程序。
+该程序的网络请求通过此代理，实际出口取决于 Clash 现有规则。
+
+公开源码与现成 EXE
+修改源码不会改变“最新正式版.zip”里的上游成品或已安装的 PCL。
+必须重新编译，再验证下载流程；本说明不代表已生成或测试通过完整客户端。
+公开源码中的 PCL 公告和自动更新相关函数原本就是空实现，本分支继续沿用。
+微软登录需要 PCL_MS_CLIENT_ID；CurseForge 搜索需要 PCL_CURSEFORGE_API_KEY，均按源码现有环境变量机制提供。
+不写入账号密码、访问令牌或第三方密钥。
+
+构建要求
+完整构建需要支持 C# 13 的 .NET SDK、MSBuild/WPF 构建工具以及 .NET Framework 4.8 目标包。
+沿用仓库 .github/workflows/build.yml 的还原和构建步骤：
+dotnet restore PCLCS\PCLCS.csproj
+msbuild "Plain Craft Launcher 2\Plain Craft Launcher 2.vbproj" -p:Configuration=Release
+
+2026-10-24 验证记录
+已检查两组来源选项仍各有三项，默认选中索引 2；配置值默认也为 2。
+App.config 和修改后的 XAML 均可正常解析，git diff --check 通过。
+使用 .NET Framework 4.8 的独立 HttpClient 探针，加载本分支的 App.config。
+实际代理地址为 http://127.0.0.1:7897/。
+从 Mojang 官方取得版本列表及版本元数据，并完整下载 26.3 的 client.jar。
+文件大小为 41,483,720 字节，SHA-1 为 e877b6a07acd633fb3bb475002175cec036e7b87，与官方元数据一致。
+这验证了 .NET 下载请求与当前代理配置；未验证完整 PCL 客户端、账号登录或整套游戏安装。
+
+国内镜像实测
+BMCLAPI 版本列表不经显式 HTTP 代理时返回 200；经当前代理的一次请求发生 TLS EOF。
+BMCLAPI 对同一 client.jar 的请求最终重定向到 piston-data.mojang.com，直连和经代理均得到 200。
+版本列表可访问不等于所有镜像文件正常；以上单次测试也不能证明整个镜像站持续不可用。
+
+当前构建限制
+本机有 .NET Framework 运行环境和旧版编译器，但 dotnet --list-sdks 没有列出 SDK，未检测到完整 Visual Studio 构建工具。
+本地不安装这些工具，改用 .github/workflows/build.yml 在 GitHub 的 Windows 2022 环境构建 Release。
+工作流保留仓库现有的 Help.zip，不另外拉取帮助库；构建产物包含 EXE、依赖 DLL、代理配置和文件校验值。
+推送 main 或手动运行工作流均可触发构建；实际结果以 Actions 运行记录为准。
+产物在本机运行时使用 127.0.0.1:7897，云端构建过程不使用本机代理。
+没有替换现有 PCL 安装。

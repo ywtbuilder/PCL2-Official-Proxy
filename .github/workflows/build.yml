@@ -1,69 +1,76 @@
-name: Build
+name: Build PCL Official Proxy
+
 on:
-  push:
-    paths:
-      - 'Plain Craft Launcher 2/**'
-      - '.github/workflows/**'
-  pull_request:
-    paths:
-      - 'Plain Craft Launcher 2/**'
-      - '.github/workflows/**'
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'Plain Craft Launcher 2/**'
+      - 'PCLCS/**'
+      - 'MeloongCore'
+      - '.github/workflows/build.yml'
+
+permissions:
+  contents: read
 
 jobs:
   build:
-    name: Build
-    runs-on: windows-latest
-    strategy:  
-       matrix:  
-         configuration: [Debug, Release]
+    name: Release
+    runs-on: windows-2022
+    timeout-minutes: 20
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
 
-    - name: Checkout
-      uses: actions/checkout@v6
-      with:
-        fetch-depth: 1
-        submodules: true
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '9.0.x'
 
-    - name: Set Describe
-      shell: bash
-      run: |
-          describe=`git describe --tags --always`
-          echo "describe=$describe" >> $GITHUB_ENV
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v3
+        with:
+          vs-version: '[17.14,18.0)'
+          msbuild-architecture: x64
 
-    - name: Setup MSBuild.exe
-      uses: microsoft/setup-msbuild@v3
-      with:
-        msbuild-architecture: x64
-    
-    - name: Update Help
-      run:  |
-        Set-Location ..
-        git clone https://github.com/LTCatt/PCL2Help.git -b master --single-branch --depth 1
-        Set-Location PCL2Help
-        Remove-Item -Path *.* -Recurse -Force
-        Compress-Archive -Path .\* -DestinationPath .\Help.zip
-        Copy-Item -Path .\Help.zip -Destination "${{ GITHUB.WORKSPACE }}\Plain Craft Launcher 2\Resources\Help.zip" -Force
-        Set-Location ..
-        Remove-Item PCL2Help -Recurse -Force
-        Set-Location ${{ GITHUB.WORKSPACE }}
+      - name: Record source revision
+        shell: pwsh
+        run: |
+          $path = 'Plain Craft Launcher 2/Modules/Base/ModBase.vb'
+          $source = [IO.File]::ReadAllText($path)
+          $source = $source.Replace('Public Const CommitHash As String = ""', ('Public Const CommitHash As String = "' + $env:GITHUB_SHA + '"'))
+          [IO.File]::WriteAllText($path, $source, [Text.UTF8Encoding]::new($false))
 
+      - name: Restore dependencies
+        run: dotnet restore PCLCS/PCLCS.csproj --verbosity minimal
 
-    - name: Replace
-      run: |
-        (gc "Plain Craft Launcher 2\Modules\ModSecret.vb") -replace 'Public OAuthClientId As String = If(Environment.GetEnvironmentVariable("PCL_MS_CLIENT_ID"), "")', 'Public OAuthClientId As String = If(Environment.GetEnvironmentVariable("PCL_MS_CLIENT_ID"), "${{ secrets.CLIENT_ID }}")' | Out-File "Plain Craft Launcher 2\Modules\ModSecret.vb"
-        (gc "Plain Craft Launcher 2\Modules\ModSecret.vb") -replace 'Public CurseForgeAPIKey As String = If(Environment.GetEnvironmentVariable("PCL_CURSEFORGE_API_KEY"), "")', 'Public CurseForgeAPIKey As String = If(Environment.GetEnvironmentVariable("PCL_CURSEFORGE_API_KEY"), "${{ secrets.CURSEFORGE_API_KEY }}")' | Out-File "Plain Craft Launcher 2\Modules\ModSecret.vb"
-        (gc "Plain Craft Launcher 2\Modules\Base\ModBase.vb") -replace 'Public Const CommitHash As String = ""', 'Public Const CommitHash As String = "${{ github.sha }}"' | Out-File "Plain Craft Launcher 2\Modules\Base\ModBase.vb"
-        
-    - name: Restore NuGet Packages
-      run: dotnet restore PCLCS\PCLCS.csproj
+      - name: Build Release
+        run: msbuild "Plain Craft Launcher 2/Plain Craft Launcher 2.vbproj" /m /p:Configuration=Release /verbosity:minimal
 
-    - name: Build
-      run: msbuild "Plain Craft Launcher 2\Plain Craft Launcher 2.vbproj" -p:Configuration=${{ matrix.configuration }}
+      - name: Package application and proxy configuration
+        shell: pwsh
+        run: |
+          $output = Join-Path $env:GITHUB_WORKSPACE 'Plain Craft Launcher 2/bin'
+          $package = Join-Path $env:GITHUB_WORKSPACE 'artifacts/PCL2-Official-Proxy'
+          New-Item -ItemType Directory -Path $package -Force | Out-Null
+          Copy-Item -LiteralPath (Join-Path $output 'Plain Craft Launcher 2.exe'), (Join-Path $output 'Plain Craft Launcher 2.exe.config') -Destination $package
+          Get-ChildItem -LiteralPath $output -Filter '*.dll' -File | Copy-Item -Destination $package
+          Copy-Item -LiteralPath 'LICENCE', '本地官方源说明.txt' -Destination $package
+          $config = [xml](Get-Content -LiteralPath (Join-Path $package 'Plain Craft Launcher 2.exe.config') -Raw)
+          if ($config.configuration.'system.net'.defaultProxy.proxy.proxyaddress -ne 'http://127.0.0.1:7897') {
+            throw 'The application proxy configuration was not included in the build output.'
+          }
+          Get-ChildItem -LiteralPath $package -File | Get-FileHash -Algorithm SHA256 |
+            ForEach-Object { '{0}  {1}' -f $_.Hash.ToLowerInvariant(), [IO.Path]::GetFileName($_.Path) } |
+            Set-Content -LiteralPath (Join-Path $package 'SHA256SUMS.txt') -Encoding utf8
 
-    - name: Upload a Build Artifact
-      uses: actions/upload-artifact@v7
-      with:
-        name: ${{ matrix.configuration }} ${{ env.describe }}
-        path: Plain Craft Launcher 2\obj\${{ matrix.configuration }}\Plain Craft Launcher 2.exe
+      - name: Upload build
+        uses: actions/upload-artifact@v7
+        with:
+          name: PCL2-Official-Proxy
+          path: artifacts/PCL2-Official-Proxy/
+          if-no-files-found: error
+          retention-days: 7

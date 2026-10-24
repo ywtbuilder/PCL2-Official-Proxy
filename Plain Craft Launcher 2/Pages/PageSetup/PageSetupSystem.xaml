@@ -26,14 +26,14 @@
                         <TextBlock VerticalAlignment="Center" HorizontalAlignment="Left" Text="文件下载源" Margin="0,0,25,0" />
                         <local:MyComboBox x:Name="ComboDownloadSource" Grid.ColumnSpan="2" local:SettingService.Key="ToolDownloadSource" Grid.Column="1">
                             <local:MyComboBoxItem Content="尽量使用镜像源" />
-                            <local:MyComboBoxItem Content="优先使用官方源，在加载缓慢时换用镜像源" IsSelected="True" />
-                            <local:MyComboBoxItem Content="尽量使用官方源" />
+                            <local:MyComboBoxItem Content="优先使用官方源，在加载缓慢时换用镜像源" />
+                            <local:MyComboBoxItem Content="尽量使用官方源" IsSelected="True" />
                         </local:MyComboBox>
                         <TextBlock VerticalAlignment="Center" HorizontalAlignment="Left" Text="版本列表源" Margin="0,0,25,0" Grid.Row="2" />
                         <local:MyComboBox x:Name="ComboDownloadVersion" Grid.ColumnSpan="2" local:SettingService.Key="ToolDownloadVersion" Grid.Column="1" Grid.Row="2">
                             <local:MyComboBoxItem Content="尽量使用镜像源（可能缺少刚刚更新的版本）" />
-                            <local:MyComboBoxItem Content="优先使用官方源，在加载缓慢时换用镜像源" IsSelected="True" />
-                            <local:MyComboBoxItem Content="尽量使用官方源" />
+                            <local:MyComboBoxItem Content="优先使用官方源，在加载缓慢时换用镜像源" />
+                            <local:MyComboBoxItem Content="尽量使用官方源" IsSelected="True" />
                         </local:MyComboBox>
                         <TextBlock Grid.Row="4" VerticalAlignment="Center" HorizontalAlignment="Left" Text="最大线程数" Margin="0,0,25,0" />
                         <local:MySlider x:Name="SliderDownloadThread" Grid.Row="4" local:SettingService.Key="ToolDownloadThread" MaxValue="255" Value="63" Grid.Column="1"

@@ -90,7 +90,7 @@ Public Class PageLoginMs
                 ElseIf ex.Message.StartsWithF("$") Then
                     Hint(ex.Message.TrimStart("$"), HintType.Red)
                 ElseIf TypeOf ex Is Security.Authentication.AuthenticationException AndAlso ex.Message.Contains("SSL/TLS") Then
-                    Logger.Error(ex, $"正版登录验证失败，请考虑在 [设置 → 其他] 中关闭 [在正版登录时验证 SSL 证书]，然后再试。{vbCrLf}{vbCrLf}原始错误信息：", LogBehavior.Alert)
+                    Logger.Error(ex, $"正版登录的 HTTPS 证书验证失败。{vbCrLf}{vbCrLf}原始错误信息：", LogBehavior.Alert)
                 Else
                     Logger.Error(ex, "正版登录尝试失败", LogBehavior.Alert)
                 End If

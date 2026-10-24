@@ -1910,24 +1910,4 @@ FinishExCatch:
         End If
     End Function
 
-    ''' <summary>
-    ''' 设置是否应当在正版登录时校验 SSL 证书。
-    ''' </summary>
-    Public Sub ShouldValidateSslCertificateOnLogin(Enabled As Boolean)
-        ServicePointManager.ServerCertificateValidationCallback =
-        Function(Sender, Certificate, Chain, Failure)
-            Dim Request As HttpWebRequest = TryCast(Sender, HttpWebRequest)
-            If Failure = Net.Security.SslPolicyErrors.None Then Return True '已通过验证
-            '基于 #3018 和 #5879，只在访问正版登录 API 时跳过证书验证
-            Logger.Warn($"未通过 SSL 证书验证（{Failure}），提供的证书为 {Certificate?.Subject}，URL：{Request?.Address}")
-            If Request Is Nothing Then
-                Return Not Enabled
-            ElseIf Request.Address.Host.Contains("xboxlive") OrElse Request.Address.Host.Contains("minecraftservices") Then
-                Return Not Enabled '根据设置决定是否忽略错误
-            Else
-                Return False
-            End If
-        End Function
-    End Sub
-
 End Module

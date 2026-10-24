@@ -35,3 +35,8 @@ foreach ($login in @($legacy, $nide, $auth)) {
     if ([string]::IsNullOrEmpty($reason)) { throw ('Unexpectedly accepted login mode: ' + $login.Type) }
     Write-Output ('PASS: rejected unverified login mode ' + $login.Type)
 }
+
+if ($null -ne [Net.ServicePointManager]::ServerCertificateValidationCallback) {
+    throw 'Launcher modified default HTTPS certificate validation.'
+}
+Write-Output 'PASS: default HTTPS certificate validation retained'

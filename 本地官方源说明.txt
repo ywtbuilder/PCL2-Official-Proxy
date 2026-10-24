@@ -30,8 +30,10 @@ Plain Craft Launcher 2\App.config 指定 HTTP 代理 http://127.0.0.1:7897。
 修改源码不会改变“最新正式版.zip”里的上游成品或已安装的 PCL。
 必须重新编译，再验证下载流程；本说明不代表已生成或测试通过完整客户端。
 公开源码中的 PCL 公告和自动更新相关函数原本就是空实现，本分支继续沿用。
-微软登录需要 PCL_MS_CLIENT_ID；CurseForge 搜索需要 PCL_CURSEFORGE_API_KEY，均按源码现有环境变量机制提供。
-不写入账号密码、访问令牌或第三方密钥。
+微软登录需要 PCL_MS_CLIENT_ID；CurseForge 搜索需要 PCL_CURSEFORGE_API_KEY。
+可在程序同名 .exe.config 的 appSettings 中填写；原有环境变量方式继续保留，环境变量优先。
+申请、填写和验证步骤见随附的“微软登录接入说明.txt”，填写参数后重启即可，无需再次编译。
+仓库和云端构建保留空配置，接入参数在本机填写。
 
 构建要求
 完整构建需要支持 C# 13 的 .NET SDK、MSBuild/WPF 构建工具以及 .NET Framework 4.8 目标包。

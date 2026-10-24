@@ -58,7 +58,7 @@ jobs:
           New-Item -ItemType Directory -Path $package -Force | Out-Null
           Copy-Item -LiteralPath (Join-Path $output 'Plain Craft Launcher 2.exe'), (Join-Path $output 'Plain Craft Launcher 2.exe.config') -Destination $package
           Get-ChildItem -LiteralPath $output -Filter '*.dll' -File | Copy-Item -Destination $package
-          Copy-Item -LiteralPath 'LICENCE', '本地官方源说明.txt' -Destination $package
+          Copy-Item -LiteralPath 'LICENCE', '本地官方源说明.txt', '微软登录接入说明.txt' -Destination $package
           $config = [xml](Get-Content -LiteralPath (Join-Path $package 'Plain Craft Launcher 2.exe.config') -Raw)
           if ($config.configuration.'system.net'.defaultProxy.proxy.proxyaddress -ne 'http://127.0.0.1:7897') {
             throw 'The application proxy configuration was not included in the build output.'

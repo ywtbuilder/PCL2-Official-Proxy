@@ -28,8 +28,9 @@ Client ID 是软件的应用编号，微软账号密码由用户在微软官方�
 微软应用注册与 Minecraft 游戏服务接入是不同的步骤。
 取得 Client ID 后，访问 Mojang 的申请入口 https://aka.ms/mce-reviewappid ，按表单要求提交自己的应用信息。
 申请中说明这是基于 PCL 公开源码的个人修改版，使用微软设备代码流程登录，仅读取拥有的游戏资料并启动游戏。
-本项目仓库：https://github.com/ywtbuilder/PCL2-Official-Proxy （当前为私有仓库）。
-如果表单要求可访问的源码或项目链接，需要提供审核人员能够访问的资料；本说明不代表已提交或通过审核。
+本项目仓库：https://github.com/ywtbuilder/PCL2-Official-Proxy
+仓库首页提供该修改分支的用途、认证流程和验证状态，可填写到申请表的 Associated website or domain。
+本说明不代表已提交或通过审核。
 不要仅凭微软授权页面能够打开，就判断 Minecraft 服务已经允许这个 Client ID。
 
 三、在本机填写 Client ID
